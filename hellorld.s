@@ -1,3 +1,4 @@
+// Hellorld.s written for a STM32F103RB CPU on a NUCLEO64 dev board
 // Directives
 .syntax unified
 .cpu cortex-m3

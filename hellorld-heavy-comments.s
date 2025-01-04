@@ -1,3 +1,4 @@
+// Hellorld.s written for a STM32F103RB CPU on a NUCLEO64 dev board
 // The syntax, cpu, and thumb directives let the assembler know
 // how to interpret and compile the ssembly language instructions
 // in this file. Full documentation here:
