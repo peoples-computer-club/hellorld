@@ -79,20 +79,20 @@
 // and it will point to the start of our code.
 // (see table 63 in the STM32F1 reference manual, page 204)
 vtable:
-    .word _estack		        // 0 Top of Stack
-                                // (_estack will be defined in linker script)
-    .word reset_handler	        // 1 Reset interrupt
-    // Fill directive has as arguments repeat #, size in bytes, and optional
-    // value -- if unspecified it's 0.
-    // (https://ftp.gnu.org/old-gnu/Manuals/gas-2.9.1/html_node/as_89.html)
-    .fill 74, 4                 // We don't care about the rest right now
+  .word _estack   		        // 0 Top of Stack
+                              // (_estack will be defined in linker script)
+  .word reset_handler	        // 1 Reset interrupt
+  // Fill directive has as arguments repeat #, size in bytes, and optional
+  // value -- if unspecified it's 0.
+  // (https://ftp.gnu.org/old-gnu/Manuals/gas-2.9.1/html_node/as_89.html)
+  .fill 74, 4                 // We don't care about the rest right now
 
 // This is data, but it is in the "text" section because it is a constant
 // And thus will be in ROM/Flash.
 string:
-    // The tag .asciz indicates a null (zero) terminated string.
-    // (https://ftp.gnu.org/old-gnu/Manuals/gas-2.9.1/html_node/as_71.html)
-    .asciz "Hellorld!\r\n"
+  // The tag .asciz indicates a null (zero) terminated string.
+  // (https://ftp.gnu.org/old-gnu/Manuals/gas-2.9.1/html_node/as_71.html)
+  .asciz "Hellorld!\r\n"
 
 // Code must be aligned on a half word, in case the size of data above isn't
 // a multiple of 2 bytes. We align on a word so the processor can fetch 32
@@ -107,69 +107,69 @@ _start:
 // This is what will get called when the CPU is reset (and the Reset interrupt
 // is triggered)
 reset_handler:
-    // What do we need to do to set up things? I don't feel that the reference
-    // documents give a good answer, without digging into every section.
-    // So in cases such as this, looking a code is the easiest. The most "official"
-    // code is the CMSIS is an ARM standard way to interface with different
-    // ARM Cortex-M CPUs by different manufacturers, but using the same code
-    // (C, generally). So all the low-level drivers/init/etc. is coded by
-    // the manufacturers. In this case, ST, and it's located here:
-    // (https://github.com/STMicroelectronics/cmsis-device-f1/tree/master)
-    // We can look at the code here to guide the way. Starting with the
-    // startup assembler code, which implements the vector table and the
-    // reset code:
-    // (https://github.com/STMicroelectronics/cmsis-device-f1/blob/master/Source/Templates/gcc/startup_stm32f102xb.s)
-    // The reset handler there does a few things like copying initialized data
-    // from Flash to RAM, and initializing un-initialized RAM to 0's. Right
-    // now we don't really care about, as it's basically for C and higher
-    // level languages and their expectations and standards.
-    // All we care about right now is the call to SystemInit. It is defined in
-    // the main C file here:
-    // (https://github.com/STMicroelectronics/cmsis-device-f1/blob/master/Source/Templates/system_stm32f1xx.c)
-    // We aren't using external RAM, nor relocating the vector table, so
-    // there isn't anything we have to do, despite the comment that it
-    // "Setups the system clock".
-    // Even so, we don't need to setup the system clock, as we are just going
-    // to use the internal 16MHz clock, which is the default. We'll dive
-    // into using external clocks later.
+  // What do we need to do to set up things? I don't feel that the reference
+  // documents give a good answer, without digging into every section.
+  // So in cases such as this, looking a code is the easiest. The most "official"
+  // code is the CMSIS is an ARM standard way to interface with different
+  // ARM Cortex-M CPUs by different manufacturers, but using the same code
+  // (C, generally). So all the low-level drivers/init/etc. is coded by
+  // the manufacturers. In this case, ST, and it's located here:
+  // (https://github.com/STMicroelectronics/cmsis-device-f1/tree/master)
+  // We can look at the code here to guide the way. Starting with the
+  // startup assembler code, which implements the vector table and the
+  // reset code:
+  // (https://github.com/STMicroelectronics/cmsis-device-f1/blob/master/Source/Templates/gcc/startup_stm32f102xb.s)
+  // The reset handler there does a few things like copying initialized data
+  // from Flash to RAM, and initializing un-initialized RAM to 0's. Right
+  // now we don't really care about, as it's basically for C and higher
+  // level languages and their expectations and standards.
+  // All we care about right now is the call to SystemInit. It is defined in
+  // the main C file here:
+  // (https://github.com/STMicroelectronics/cmsis-device-f1/blob/master/Source/Templates/system_stm32f1xx.c)
+  // We aren't using external RAM, nor relocating the vector table, so
+  // there isn't anything we have to do, despite the comment that it
+  // "Setups the system clock".
+  // Even so, we don't need to setup the system clock, as we are just going
+  // to use the internal 16MHz clock, which is the default. We'll dive
+  // into using external clocks later.
 
-    // So we don't HAVE to do anything. But for our example we want to print some text
-    // on some sort of output. We don't have video output yet. Like the earliest personal
-    // computers, like the Altair 8080 we just have a serial connection. In fact,
-    // it's basically the same as the Altair... its a USART interface. The cool thing about
-    // the Nucleo board is that the top part is a connection to the CPU-system that
-    // gives us a bunch of stuff for free -- putting this code into the Flash, and
-    // also exposing a USART that we can easily connect to on the host computer.
-    // In section 6.8 of the NUCLEO-64 User's guide, it talks about how the device
-    // exposes USART2 to the ST-LINK and thus the host computer.
+  // So we don't HAVE to do anything. But for our example we want to print some text
+  // on some sort of output. We don't have video output yet. Like the earliest personal
+  // computers, like the Altair 8080 we just have a serial connection. In fact,
+  // it's basically the same as the Altair... its a USART interface. The cool thing about
+  // the Nucleo board is that the top part is a connection to the CPU-system that
+  // gives us a bunch of stuff for free -- putting this code into the Flash, and
+  // also exposing a USART that we can easily connect to on the host computer.
+  // In section 6.8 of the NUCLEO-64 User's guide, it talks about how the device
+  // exposes USART2 to the ST-LINK and thus the host computer.
 
-    // We need to initialize USART2, and create a routine to send characters
-    // to it. And then we'll have our program.
+  // We need to initialize USART2, and create a routine to send characters
+  // to it. And then we'll have our program.
 
-    // bl is like "gosub" -- it branches while putting the next address in the link
-    // register -- bl = branch with link. This way we can return from the function
-    // and continue running at the next address.
-    bl uart2_init
+  // bl is like "gosub" -- it branches while putting the next address in the link
+  // register -- bl = branch with link. This way we can return from the function
+  // and continue running at the next address.
+  bl uart2_init
 
-    // We can pass arguments to functions any way we like, but ARM has a standard
-    // called the "procedure call standard" so that different software can interact
-    // with each other and know what to expect. That standard specifies that
-    // "the first four registers r0-r3 (a1-a4) are used to pass argument values into
-    // a subroutine and to return a result value from a function". See:
-    // (https://github.com/ARM-software/abi-aa/releases/download/2024Q3/aapcs32.pdf)
+  // We can pass arguments to functions any way we like, but ARM has a standard
+  // called the "procedure call standard" so that different software can interact
+  // with each other and know what to expect. That standard specifies that
+  // "the first four registers r0-r3 (a1-a4) are used to pass argument values into
+  // a subroutine and to return a result value from a function". See:
+  // (https://github.com/ARM-software/abi-aa/releases/download/2024Q3/aapcs32.pdf)
 
-    // We will make a function that takes the address of a null-terminated string
-    // and outputs it to UART2. So first we load r0 with the address (that's what
-    // the = means, the address of the label). This is actually a pseudo-instruction
-    // (https://developer.arm.com/documentation/dui0041/c/Babbfdih) and it converts
-    // it to another instruction, for example a PC-relative offset, so that the code
-    // can be position-indepenent, and also because every ARM instruction is at most
-    // 32 bits, and an ARM Cortex-M address is 32-bits wide in and of itself.
+  // We will make a function that takes the address of a null-terminated string
+  // and outputs it to UART2. So first we load r0 with the address (that's what
+  // the = means, the address of the label). This is actually a pseudo-instruction
+  // (https://developer.arm.com/documentation/dui0041/c/Babbfdih) and it converts
+  // it to another instruction, for example a PC-relative offset, so that the code
+  // can be position-indepenent, and also because every ARM instruction is at most
+  // 32 bits, and an ARM Cortex-M address is 32-bits wide in and of itself.
 loop:
-    ldr r0, =string
-    // Now we keep calling our print string function over and over
-    bl uart2_print_str
-    b loop
+  ldr r0, =string
+  // Now we keep calling our print string function over and over
+  bl uart2_print_str
+  b loop
 
 
 // To use one of the perpherals on the CPU-system, we have to turn it on and then

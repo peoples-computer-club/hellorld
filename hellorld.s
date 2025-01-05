@@ -24,25 +24,25 @@
 
 // Vector interrupt table, all we care about is reset right now
 vtable:
-    .word _estack		            // 0 Top of Stack
-    .word reset_handler	        // 1 Reset interrupt
-    .fill 74, 4                 // We don't care about the rest right now
+  .word _estack		            // 0 Top of Stack
+  .word reset_handler	        // 1 Reset interrupt
+  .fill 74, 4                 // We don't care about the rest right now
 
 string:
-    .asciz "Hellorld!\r\n"
+  .asciz "Hellorld!\r\n"
 
 .align 4
 
 _start:
 reset_handler:
-    // Initialize the USART connected to the ST-Link device
-    bl uart2_init
+  // Initialize the USART connected to the ST-Link device
+  bl uart2_init
 loop:
-    // uart2_print_str takes the address of the string to print
-    ldr r0, =string
-    bl uart2_print_str
-    // Now we keep calling our print string function over and over
-    b loop
+  // uart2_print_str takes the address of the string to print
+  ldr r0, =string
+  bl uart2_print_str
+  // Now we keep calling our print string function over and over
+  b loop
 
 
 uart2_init:
